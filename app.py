@@ -135,48 +135,57 @@ except Exception as e:
 # ======================================================
 
 try:
-    tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
 
-@tool("Internet Search Tool")
-def search_tool(query: str) -> str:
-    \"\"\"
-    Search the internet for engineering information.
-    \"\"\"
+    tavily_client = TavilyClient(
+        api_key=TAVILY_API_KEY
+    )
 
-    try:
-        response = tavily_client.search(
-            query=query,
-            search_depth=\"advanced\",
-            max_results=max_results
-        )
+    @tool("Internet Search Tool")
+    def search_tool(query: str) -> str:
+        """
+        Search the internet for engineering information.
+        """
 
-        results = response.get(\"results\", [])
+        try:
 
-        if not results:
-            return \"No results found.\"
-
-        formatted = []
-
-        for item in results:
-            title = item.get(\"title\", \"\")\n
-            content = item.get(\"content\", \"\")\n
-            url = item.get(\"url\", \"\")\n
-            formatted.append(
-                f\"Title: {title}\\n\"\n
-                f\"Content: {content}\\n\"\n
-                f\"URL: {url}\\n\"\n
+            response = tavily_client.search(
+                query=query,
+                search_depth="advanced",
+                max_results=max_results
             )
 
-        return \"\\n\\n\".join(formatted)
+            results = response.get("results", [])
 
-    except Exception as e:
-        return f\"Search Error: {str(e)}\"
+            if not results:
+                return "No results found."
+
+            formatted = []
+
+            for item in results:
+
+                title = item.get("title", "")
+                content = item.get("content", "")
+                url = item.get("url", "")
+
+                formatted.append(
+                    f"Title: {title}\n"
+                    f"Content: {content}\n"
+                    f"URL: {url}\n"
+                )
+
+            return "\n\n".join(formatted)
+
+        except Exception as e:
+            return f"Search Error: {str(e)}"
+
 except Exception as e:
-    st.error("❌ فشل تهيئة Tavily")
-    st.exception(e)
-    st.stop()
 
-# ======================================================
+    st.error("❌ فشل تهيئة Tavily")
+
+    st.exception(e)
+
+    st.stop()
+#======================================================
 # Agents
 # ======================================================
 
