@@ -30,8 +30,8 @@ from crewai import Task
 from crewai import Crew
 from crewai import Process
 
-from crewai_tools import TavilySearchResults
-
+from crewai_tools import tool
+from tavily import TavilyClient
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 # ======================================================
@@ -135,11 +135,42 @@ except Exception as e:
 # ======================================================
 
 try:
-    search_tool = TavilySearchResults(
-        max_results=max_results,
-        tavily_api_key=TAVILY_API_KEY
-    )
+    tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
 
+@tool("Internet Search Tool")
+def search_tool(query: str) -> str:
+    \"\"\"
+    Search the internet for engineering information.
+    \"\"\"
+
+    try:
+        response = tavily_client.search(
+            query=query,
+            search_depth=\"advanced\",
+            max_results=max_results
+        )
+
+        results = response.get(\"results\", [])
+
+        if not results:
+            return \"No results found.\"
+
+        formatted = []
+
+        for item in results:
+            title = item.get(\"title\", \"\")\n
+            content = item.get(\"content\", \"\")\n
+            url = item.get(\"url\", \"\")\n
+            formatted.append(
+                f\"Title: {title}\\n\"\n
+                f\"Content: {content}\\n\"\n
+                f\"URL: {url}\\n\"\n
+            )
+
+        return \"\\n\\n\".join(formatted)
+
+    except Exception as e:
+        return f\"Search Error: {str(e)}\"
 except Exception as e:
     st.error("❌ فشل تهيئة Tavily")
     st.exception(e)
